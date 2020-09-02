@@ -2,10 +2,17 @@
 layout: post
 title: "Lamport的分布式状态机论述"
 description: ""
-category: 
+category: 分布式系统
 tags: []
 ---
-{% include JB/setup %}
 
-Lamport说：
-> A distributed system can be described as a particular sequential state machine that is implemented with a network of processors. The ability to totally order the input requests leads immediately to an algorithm to implement an arbitrary state machine by a network of processors, and hence to implement any distributed system. So,I wrote this paper, which is about how to implement an arbitrary distributed state machine. As an illustration, I used the simplest example of a distributed system I could think of--a distributed mutual exclusion algorithm.
+Lamport认为一个分布式系统可以被描述为由处理器网络实现的某种线性状态机。将输入请求进行全序的能力，就是要求一种基于处理器网络实现任意状态机的算法——也就是实现分布式系统的算法。他的研究是基于状态机的。任意计算都可以用状态机描述，而状态机又是形式化的，这就便于对分布式算法进行归纳证明，也便于对分布式系统进行形式化验证。
+
+多节点并发执行的计算如何映射到串行状态机呢？问题就归约为全序（total order）。
+
+因果关系是非对称、传递、反自反的。一个分布式系统中只有部分事件有明确的因果关系。因此根据因果关系只能得到partial order。所谓全序就是在保持因果序前提下将其他事件按某个规则排序得到的一种排序——因此可以由多种全序。
+
+分布式系统中的因果关系有两种：一种是同一个系统要做的事件有先后顺序，比如先下载再转码再推理是不可颠倒的；另一种是多个系统之间依靠消息通信传递形成happens-before依赖，比如服务发现系统没有返回目标地址时，就不可能触发客户端根据该地址访问的事件。
+
+如何确定一个全序？可以用事件的逻辑时间（比如zookeeper中的zxid，每次修改+1）先确定partial order。然后再对逻辑时间相同的事件按照一种预先生成的确定性的不重叠的host id定序。
+
